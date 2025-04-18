@@ -102,7 +102,7 @@ def batch_convert(input_dir,output_dir,scale_factor=1.0, offset_x = 0, offset_y 
         output_file = os.path.join(output_dir, f"{basename}.geojson")
 
         try:
-            asap_xml_to_ggeojson(xml_file, output_file,scale_factor, offset_x,offset_y)
+            asap_xml_to_geojson(xml_file, output_file,scale_factor, offset_x,offset_y)
         except Exception as e:
             print(f"파일 '{xml_file}' 처리 중 오류 발생 : {e}")
 
@@ -124,5 +124,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
+
 
