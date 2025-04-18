@@ -25,7 +25,7 @@ annotations = coco.loadAnns(ann_ids)
 plt.imshow(image)
 ax = plt.gca()
 
-for ann in annotaitons:
+for ann in annotations:
     bbox = ann['bbox']
     x,y,w,h = bbox
     ## 사각형으로 표시?
