@@ -87,7 +87,7 @@ def geojson_to_asap_xml(geojson_path, output_xml_path, group_name = 'Unknown',
 
         annotation.set('PartOfGroup','None')
 
-        annoation.set('Color', group_color)
+        annotation.set('Color', group_color)
 
         coords = ET.SubElement(annotation,'Coordinates')
 
@@ -99,7 +99,7 @@ def geojson_to_asap_xml(geojson_path, output_xml_path, group_name = 'Unknown',
             y = float(coord[1]) * scale_factor + offset_y
 
 
-            coordiante.set('X',f'{x:.4f}')
+            coordinate.set('X',f'{x:.4f}')
             coordinate.set('Y',f'{y:.4f}')
 
     groups_element = ET.SubElement(root,'AnnotationGroups')
@@ -114,22 +114,30 @@ def geojson_to_asap_xml(geojson_path, output_xml_path, group_name = 'Unknown',
 
     pretty_xml = prettify_xml(root)
 
-    with open(outptu_xml_path, 'wb') as f:
+    with open(output_xml_path, 'wb') as f:
         f.write(pretty_xml)
     print(f"변환 완료: {output_xml_path}")
 
-def batch_convert(input_dir,oupput_dir, group_name = 'Unknown', group_color='#F4FA58'):
+def batch_convert(input_dir,output_dir, group_name = 'Unknown', group_color='#F4FA58'):
     """디렉토리 내의 모든 GeoJson 파일을 ASAP XML로 변환"""
     os.makedirs(output_dir,exist_ok =True)
 
     # 모든 GeoJson 파일 찾기
     geojson_files = glob.glob(os.path.join(input_dir,"*.geojson"))
     geojson_files.extend(glob.glob(os.path.join(input_dir, "*.json")))
+    
+    if not geojson_files:
+        print(f'디렉토리 '{input_dir}'에서 GeoJson파일을 찾을 수 없습니다.')
+        return
 
-    try:
-        geojson_to_asap_xml(geojson_files,output_file,group_name,group_color)
-    except Exception as e:
-        print(f"파일 '{geojson_files}' 처리 중 오류 발생")
+    for geojson_file in geojson_files:
+        basename = os.path.splitext(os.path.basename(geojson_file))[0]
+        output_file = os.path.join(output_dir, f'{basename}.xml')
+
+        try:
+            geojson_to_asap_xml(geojson_files,output_file,group_name,group_color)
+        except Exception as e:
+            print(f"파일 '{geojson_files}' 처리 중 오류 발생")
 
 def main():
     parser = argparse.ArgumentParser(description = 'Qupath GeoJson을 ASAP XML로 변환')
