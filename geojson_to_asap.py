@@ -127,7 +127,7 @@ def batch_convert(input_dir,output_dir, group_name = 'Unknown', group_color='#F4
     geojson_files.extend(glob.glob(os.path.join(input_dir, "*.json")))
     
     if not geojson_files:
-        print(f'디렉토리 '{input_dir}'에서 GeoJson파일을 찾을 수 없습니다.')
+        print(f"디렉토리 '{input_dir}'에서 GeoJson파일을 찾을 수 없습니다.")
         return
 
     for geojson_file in geojson_files:
