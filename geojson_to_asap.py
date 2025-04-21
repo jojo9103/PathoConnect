@@ -52,55 +52,47 @@ def geojson_to_asap_xml(geojson_path, output_xml_path, group_name = 'Unknown',
     if group_name:
         groups_set.add(group_name)
     for idx, feature in enumerate(features):
-        try:
-            cls1 = feature.get('properties').get('classification').get('names')
-        except:
-            cls1 = False
-        properties = feature.get('properties' , {})
-        geometry = feature.get('geometry' , {})
-        geometry_type = geometry.get('type','')
+        cls1 = feature.get('properties', {}).get('classification', {}).get('names')
+        geometry = feature.get('geometry', {})
+        geometry_type = geometry.get('type', '')
 
         if geometry_type != 'Polygon':
-            print(f"지원되지 않는 geometry 유형 : {geometry_type}, 건너뜁니다.")
+            print(f"지원되지 않는 geometry 유형: {geometry_type}, 건너뜁니다.")
+            continue
+
+        # 클래스 정보 필터링
+        try:
+            if not cls1 or not isinstance(cls1, list) or len(cls1) < 2:
+                continue
+            if target_names and type_names:
+                if cls1[0] not in type_names or cls1[1] not in target_names:
+                    continue
+            cls_name = '_'.join(cls1)
+        except Exception as e:
+            print(f"클래스 필터링 중 오류: {e}")
+            continue
 
         rt = is_rectangle(geometry['coordinates'][0])
+        annotation = ET.SubElement(annotations, "Annotation")
+        annotation.set("Name", f"{cls_name}_{idx}")
 
-        annotation = ET.SubElement(annotations, 'Annotation')
-        """geometry에서 특정 이름만 가져오기"""
-        try:
-            if type(target_names) != bool and type(cls1) != bool and cls1 != None and len(cls1) > 1:
-                if cls1[0] in type_names and cls1[1] in target_names:
-                    cls_name = '_'.join(cls1)
-                    annotation.set("Name", f"{cls_name}_{idx}")
-                else:
-                    print(cls1[0] in type_names, cls1[1] in target_names)
-                    annotation.set('Name',f'Annotation {idx}')
-            else:
-                annotation.set('Name',f'Annotation {idx}')
-        except:
-            print(target_names, cls1)
-        if rt[1]: # 사각형이냐?
-            annotation.set('Type','Rectangle')
+        if rt[1]:
+            annotation.set("Type", "Rectangle")
             geometry['coordinates'][0] = rt[0]
         else:
-            annotation.set('Type','Spline')
+            annotation.set("Type", "Spline")
 
-        annotation.set('PartOfGroup','None')
+        annotation.set("PartOfGroup", "None")
+        annotation.set("Color", group_color)
 
-        annotation.set('Color', group_color)
-
-        coords = ET.SubElement(annotation,'Coordinates')
-
+        coords = ET.SubElement(annotation, "Coordinates")
         for coord_idx, coord in enumerate(geometry['coordinates'][0]):
-            coordinate = ET.SubElement(coords, 'Coordinate')
-            coordinate.set('Order',str(coord_idx))
-
+            coordinate = ET.SubElement(coords, "Coordinate")
+            coordinate.set("Order", str(coord_idx))
             x = float(coord[0]) * scale_factor + offset_x
             y = float(coord[1]) * scale_factor + offset_y
-
-
-            coordinate.set('X',f'{x:.4f}')
-            coordinate.set('Y',f'{y:.4f}')
+            coordinate.set("X", f"{x:.4f}")
+            coordinate.set("Y", f"{y:.4f}")
 
     groups_element = ET.SubElement(root,'AnnotationGroups')
 
