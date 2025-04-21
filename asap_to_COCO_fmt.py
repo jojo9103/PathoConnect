@@ -48,7 +48,7 @@ def tile_and_generate_coco(wsi_path, rectangles, polygons, output_dir,
                            tile_size= 512, stride = 512,level=0):
     slide = openslide.OpenSlide(wsi_path)
     downsample = slide.level_downsamples[level]
-
+    sam_name = os.path.basename(wsi_path).split('.')[0]
     images = []
     annotations = []
     categories_dict = {}
@@ -67,7 +67,7 @@ def tile_and_generate_coco(wsi_path, rectangles, polygons, output_dir,
             for x in range(int(x0), x1, stride):
                 read_size = int(tile_size*downsample)
                 patch = slide.read_region( (int(x),int(y)),level, (tile_size,tile_size)).convert('RGB')
-                patch_name = f"tile_{image_id}_{x}_{y}.png"
+                patch_name = f"{sam_name}_{image_id}_{x}_{y}.png"
                 patch_path = os.path.join(output_dir, patch_name)
                 patch.save(patch_path)
 
